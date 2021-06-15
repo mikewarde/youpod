@@ -1,0 +1,19 @@
+{
+  "name": "root",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generate_rss.js",
+  "dependencies": {
+    "jquery": "^3.6.0",
+    "json": "^11.0.0",
+    "rss": "^1.2.2",
+    "shelljs": "^0.8.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
