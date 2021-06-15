@@ -10,7 +10,7 @@ function ffprobe(file){
 } 
 
 
-async function generate_rss(folder, callback) {
+function generate_rss(folder ) {
 	const directoryPath = path.join(__dirname, folder);
 	let rss = new RSS({
 		title: folder,
@@ -46,15 +46,16 @@ async function generate_rss(folder, callback) {
 	rss.item({title: 'test'});
 
 	//Loop through files in directory;
-	var x = await fs.readdir(directoryPath, function (err, files) {
-		if (err) {
+	files = fs.readdirSync(directoryPath);
+		if (!files) {
 			return console.log('unable to scan: ' + err); 
 		}
 		
 		files
 		 .filter(el => path.extname(el) === '.json')
 		 .forEach(function (file) {
-			console.log(file)
+			//console.log(directoryPath); 	
+			//console.log(file);
 			
 			let json = fs.readFileSync(directoryPath+'/'+file);
 			let pjson = JSON.parse(json);	 
@@ -63,7 +64,7 @@ async function generate_rss(folder, callback) {
 			//console.log(ffprobe(mp3path).streams[0].duration) ;  
 			
 			//Add each file as an item to the rss xml; 
-			console.log('Adding item: ' + pjson.fulltitle); 
+			//console.log('Adding item: ' + pjson.fulltitle); 
 			rss.item({    
 			title:  pjson.fulltitle,
     			description: '',
@@ -71,7 +72,7 @@ async function generate_rss(folder, callback) {
     			categories: ['Category 1','Category 2','Category 3','Category 4'], // optional - array of item categories
     			author: 'Guest Author', // optional - defaults to feed author property
     			date: 'May 27, 2012', // any format that js Date can parse.
-    			enclosure: {url:'...', file:'path-to-file'}, // optional enclosure
+    			//enclosure: {url:'...', file:'path-to-file'}, // optional enclosure
     			custom_elements: [
 					  {'itunes:author': 'YouPod'},
 					  {'itunes:subtitle': ''},
@@ -84,8 +85,8 @@ async function generate_rss(folder, callback) {
 				]})
 		});
 		
-	});
 	
-	callback(rss.xml()); 		
+	return rss.xml(); 		
 }
-generate_rss('news', a => console.log(a)); 
+console.log(generate_rss('news'));
+
