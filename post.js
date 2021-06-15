@@ -6,7 +6,8 @@ var path  = require('path')
 const { parse } = require('querystring');
 
 function youtubedl(folder, url){
-    var command = `mkdir ./${folder} ; 
+    let filePath = path.join(__dirname, folder);
+    var command = `mkdir -p ${filePath} ; 
 	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/%(id)s.%(ext)s" ${url}`;
 	    console.log(command); 
 	    if (shell.exec(command).code !== 0) {
@@ -21,7 +22,7 @@ function youtubedl(folder, url){
 
 var server = http.createServer(function (req, res) {
     if (req.method === "GET") {
-	var filePath = path.join(__dirname, `./pods${req.url}.json`);
+	let filePath = path.join(__dirname, `./pods${req.url}.xml`);
 	if (fs.existsSync(filePath)) {
 		var readStream = fs.createReadStream(filePath);
 		readStream.pipe(res);
