@@ -2,15 +2,16 @@ var http = require('http');
 var fs = require('fs');
 var shell = require('shelljs') 
 var path  = require('path') 
-
+const { generate_rss }  = require('./generate_rss.js');
 const { parse } = require('querystring');
+const XMLPATH = '/usr/share/nginx/html/'
+
 
 function youtubedl(folder, url){
     let filePath = path.join(__dirname, folder);
     var command = `mkdir -p ${filePath} ;
-	date=$(date +'%Y%m%d%H%M%S') ;
-	echo $date ;  
-	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/$\{date\}!%(id)s.%(ext)s" ${url}`;
+	date=$(date +'%s') ;
+	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/\$\{date\}_%(id)s.%(ext)s" ${url}`;
 
 	    console.log(command); 
 	    if (shell.exec(command).code !== 0) {
@@ -25,7 +26,7 @@ function youtubedl(folder, url){
 
 var server = http.createServer(function (req, res) {
     if (req.method === "GET") {
-	let filePath = path.join(__dirname, `./pods${req.url}.xml`);
+	let filePath = path.join(__dirname, `.${req.url}.xml`);
 	if (fs.existsSync(filePath)) {
 		var readStream = fs.createReadStream(filePath);
 		readStream.pipe(res);
@@ -47,6 +48,8 @@ var server = http.createServer(function (req, res) {
 	    console.log(parse(body).url); 
 	    console.log(parse(body).listname);	
 		if (youtubedl(parse(body).listname, parse(body).url) == 0) {
+			let feed = generate_rss(parse(body).listname, XMLPATH); 
+			console.log(feed); 			
 			res.end('ok');
 		} 
 		else {
