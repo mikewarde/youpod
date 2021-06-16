@@ -8,7 +8,8 @@ const { parse } = require('querystring');
 function youtubedl(folder, url){
     let filePath = path.join(__dirname, folder);
     var command = `mkdir -p ${filePath} ; 
-	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/%(id)s.%(ext)s" ${url}`;
+	date=$(date +'%Y%m%d%H%M%S') ;
+	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/$date_%(id)s.%(ext)s" ${url}`;
 	    console.log(command); 
 	    if (shell.exec(command).code !== 0) {
 	        shell.exit(1);
