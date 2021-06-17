@@ -6,11 +6,14 @@ var Podcast = require('podcast');
 const DOMAIN = 'http://youpod.radged.com/';
 
 function ffprobe(file){
-    //let command = `ffprobe -v quiet -print_format json  -show_streams ${file}`;
     let command = `ffprobe -v error -show_entries  format=duration -sexagesimal -print_format json ${file}`;
-    shell.config.silent = true; 
-	return JSON.parse(shell.exec(command).stdout, { silent: true } );  	
+	return JSON.parse(shell.exec(command, { silent: true }).stdout);  	
 } 
+
+function getMimeType(file){
+	let command = `mimetype -b ${file}`;
+	return shell.exec(command, { silent: true }); 
+}
 
 function getFileSize(file){
     return fs.statSync(file).size;
@@ -77,24 +80,16 @@ function generate_rss(folder, expath) {
 		 .forEach(function (file) {
 			let json = fs.readFileSync(directoryPath+'/'+file);
 			let pjson = JSON.parse(json);	 
-			let mp3file = `${file.substr(0, file.indexOf('.'))}.mp3`;
-			let mp3path = `${directoryPath}/${mp3file}`;
+			let mp3path = pjson._filename;
 			let filedateUTS = file.substr(0, file.indexOf('_')); 
-			//console.log(filedateUTS); 		
 			let filedate = new Date(file.substr(0, file.indexOf('_')) *1000);
-			//console.log(filedate); 
-			//console.log(mp3path); 
-			//console.log('size ' +  getFileSize(mp3path)); 
-			//console.log(pjson);
-			//console.log(ffprobe(mp3path).format.duration) ;  
-			//console.log('Adding item: ' + pjson.fulltitle); 
 			feed.addItem(
 				feedItem(
 					pjson.title,
 					pjson.description,
-					folder+'/'+mp3file,
+					mp3path.substring(1),
 					getFileSize(mp3path),					
-					type='audio/mpeg',
+					type=getMimeType(mp3path),
 					date=filedate, 
 					pjson.title,
 					ffprobe(mp3path).format.duration,

@@ -7,20 +7,18 @@ const { parse } = require('querystring');
 const XMLPATH = '/usr/share/nginx/html/'
 
 
-function youtubedl(folder, url){
+async function youtubedl(folder, url, callback){
     let filePath = path.join(__dirname, folder);
     var command = `mkdir -p ${filePath} ;
 	date=$(date +'%s') ;
-	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -x  --audio-format mp3 -o "./${folder}/\$\{date\}_%(id)s.%(ext)s" ${url}`;
-
+	youtube-dl -i --write-info-json --download-archive archive.txt -w -f 'bestaudio[ext=m4a]' -o "./${folder}/\$\{date\}_%(id)s.%(ext)s" ${url}`;
 	    console.log(command); 
-	    if (shell.exec(command).code !== 0) {
-	        shell.exit(1);
-		return 1;
-	    }
-	    else {
-		return 0;	
-	    }
+		try {
+			shell.exec(command).code
+			callback(folder, XMLPATH);
+		}	 catch (err) {
+			console.log(err); 
+		}
 }
 
 
@@ -36,27 +34,23 @@ var server = http.createServer(function (req, res) {
 
     } else if (req.method === "POST") {
     
-        var body = "";
-        
-	req.on("data", function (chunk) {
-            body += chunk.toString();
-        });
+		var body = "";
 
+		// data streaiming in 	
+		req.on("data", function (chunk) {
+				body += chunk.toString();
+			});
 
-        req.on("end", function(){
-	    console.log(parse(body));
-	    console.log(parse(body).url); 
-	    console.log(parse(body).listname);	
-		if (youtubedl(parse(body).listname, parse(body).url) == 0) {
-			let feed = generate_rss(parse(body).listname, XMLPATH); 
-			console.log(feed); 			
-			res.end('ok');
-		} 
-		else {
-			res.end('Error');
-		}
+		//End of request
+		req.on("end", function(){
+			try {
+				youtubedl(parse(body).listname, parse(body).url, generate_rss); 
+				res.end('ok');
+			
+			} catch (err) {
+				res.end('Error');
+			}
 
-        });
-    }
-
+		});
+	}
 }).listen(3000);
